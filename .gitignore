@@ -1,2 +1,5 @@
 # virtualenv
 .venv
+
+# Pycharm-specific files
+.idea/
