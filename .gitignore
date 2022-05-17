@@ -2,4 +2,11 @@
 .venv
 
 # Pycharm-specific files
-.idea/
+.idea
+
+# jupyter notebooks
+/notebooks/
+
+# pycache
+__pycache__
+ *.pyc
