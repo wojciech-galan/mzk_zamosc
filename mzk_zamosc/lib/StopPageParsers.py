@@ -32,18 +32,18 @@ def parse_stop_page(stop_url: str):
     found: bs4.element.ResultSet[bs4.element.Tag] = tr.findAll(tag_has_bgcolor)
     assert len(found) == 1
     timetable = found[0]
-    # print(timetable.prettify())
+    departures = []
     for tr in timetable.findAll(align=is_center_aligned):
-        # print(tr.prettify())
         if has_one_td_with_class(tr):
-            print(td_has_class_is_followed_by_td_without_class(tr))
-    # print(found[0].prettify())
+            departure = td_has_class_is_followed_by_td_without_class(tr)
+            if departure:
+                departures.append(departure)
+    return departures
 
 
 def td_has_class_is_followed_by_td_without_class(tr: bs4.element.Tag) -> List[bs4.element.Tag]:
     if has_one_td_with_class(tr) and not has_one_td_with_class(tr.next_sibling) and not has_one_td_with_class(
             tr.next_sibling.next_sibling):
-        # print(tr.next_sibling.next_sibling.prettify())
         return Departures(parse_departure_days(tr), parse_departure_hours(tr.next_sibling),
                           parse_departure_hours(tr.next_sibling.next_sibling))
 
@@ -69,13 +69,4 @@ is_center_aligned = partial(is_aligned, alignment="CENTER")
 has_one_td_with_class = partial(has_only_child_with_attribute, child_name='td', attribute_name='class')
 
 if __name__ == '__main__':
-    # parse_stop_page('http://www.mzk.zamosc.pl/pliki/rozklad/0056/0056t030.htm')
-    print(get_lines_from_given_stop('http://www.mzk.zamosc.pl/pliki/rozklad/p/p0120.htm'))
-    # import urllib.request
-    # #with urllib.request.urlopen('http://www.mzk.zamosc.pl/pliki/rozklad/p/p0120.htm') as handle:
-    # with open('/home/wojtek/Downloads/p0120.htm') as handle:
-    #     content = handle.read()
-    #     soup = BeautifulSoup(content, 'html.parser')
-    #     tbody: bs4.element.Tag = soup.body.table.tbody
-    #     hrefs: bs4.element.ResultSet = tbody.findAll('a')
-    #     print(tbody.prettify())
+    parse_stop_page('http://www.mzk.zamosc.pl/pliki/rozklad/0056/0056t030.htm')
