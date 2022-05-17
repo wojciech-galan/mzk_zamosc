@@ -17,12 +17,12 @@ from mzk_zamosc.lib.functions import is_aligned
 from mzk_zamosc.lib.functions import has_only_child_with_attribute
 
 
-def get_lines_from_given_stop(line_url: str) -> List[A]:
+def get_lines_from_given_stop(line_url: str, url_root: str = 'http://www.mzk.zamosc.pl/pliki/rozklad/') -> List[A]:
     req = requests.get(line_url)
     soup = BeautifulSoup(req.content, 'html.parser')
     table: bs4.element.Tag = soup.body.table
     hrefs: bs4.element.ResultSet = table.findAll('a')
-    return hrefs[:-1]
+    return [A(f'{url_root}{x["href"].lstrip(".")}', x.text) for x in hrefs[:-1]]
 
 
 def parse_stop_page(stop_url: str):
