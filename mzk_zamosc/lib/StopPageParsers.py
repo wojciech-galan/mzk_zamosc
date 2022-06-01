@@ -1,9 +1,10 @@
 import os
 import sys
-
+import lxml
 import bs4.element
 import requests
 from functools import partial
+from lxml import etree
 from bs4 import BeautifulSoup
 from typing import List
 
@@ -41,26 +42,33 @@ def parse_stop_page(stop_url: str):
     return departures
 
 
-def td_has_class_is_followed_by_td_without_class(tr: bs4.element.Tag) -> List[bs4.element.Tag]:
+def td_has_class_is_followed_by_td_without_class(tr: bs4.element.Tag) -> Departures:
     if has_one_td_with_class(tr) and not has_one_td_with_class(tr.next_sibling) and not has_one_td_with_class(
             tr.next_sibling.next_sibling):
-        return Departures(parse_departure_days(tr), parse_departure_hours(tr.next_sibling),
-                          parse_departure_hours(tr.next_sibling.next_sibling))
+        return Departures(parse_departure_days(tr),
+                          parse_departure_hours(etree.fromstring(tr.next_sibling.prettify())),
+                          parse_departure_hours(
+                              etree.fromstring(tr.next_sibling.next_sibling.prettify()))
+                          )
 
 
 def parse_departure_days(tr: bs4.element.Tag) -> str:
     return tr.td.b.text
 
 
-def parse_departure_hours(tag: bs4.element.Tag, found: List[str] = None) -> List[str]:
+def parse_departure_hours(element: lxml.etree._Element, found: List[str] = None) -> List[List[str]]:
     if found is None:
         found = []
-    if type(tag) is bs4.element.NavigableString:
-        found.append(tag.text)
+    text = element.text.strip() if element.text else None
+    if text: found.append([text])
+    if element.tag == 'br':
+        br_text = element.tail.strip()
+        if br_text:
+            found[-1].append(br_text)
     else:
-        td: bs4.element.Tag
-        for td in tag:
-            parse_departure_hours(td, found)
+        sub_element: lxml.etree._Element
+        for sub_element in element:
+            parse_departure_hours(sub_element, found)
     return found
 
 
@@ -69,4 +77,7 @@ is_center_aligned = partial(is_aligned, alignment="CENTER")
 has_one_td_with_class = partial(has_only_child_with_attribute, child_name='td', attribute_name='class')
 
 if __name__ == '__main__':
-    parse_stop_page('http://www.mzk.zamosc.pl/pliki/rozklad/0056/0056t030.htm')
+    for element in parse_stop_page('http://www.mzk.zamosc.pl/pliki/rozklad/0056/0056t030.htm'):
+        print(element)
+    for element in parse_stop_page('http://www.mzk.zamosc.pl/pliki/rozklad//0000/0000t008.htm'):
+        print(element)
