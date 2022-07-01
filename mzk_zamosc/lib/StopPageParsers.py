@@ -23,7 +23,7 @@ def get_lines_from_given_stop(line_url: str, url_root: str = 'http://www.mzk.zam
     soup = BeautifulSoup(req.content, 'html.parser')
     table: bs4.element.Tag = soup.body.table
     hrefs: bs4.element.ResultSet = table.findAll('a')
-    return [A(f'{url_root}{x["href"].lstrip(".")}', x.text) for x in hrefs[:-1]]
+    return [A(f'{url_root}{x["href"].lstrip(".")}', x.text.strip()) for x in hrefs[:-1]]
 
 
 def parse_stop_page(stop_url: str):
