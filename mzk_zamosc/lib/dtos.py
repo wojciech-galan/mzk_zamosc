@@ -21,6 +21,7 @@ class Departures(object):
         for i in range(len(self._hours)):
             time.extend(Departures.hour_and_minute_to_time(self._hours[i][0], self._minutes[i]))
         self.time = filter(bool, time)
+        super().__init__()
 
     @staticmethod
     def hour_and_minute_to_time(hour: str, minutes: List[str]):
