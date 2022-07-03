@@ -9,6 +9,11 @@ class A(NamedTuple):
     text: str
 
 
+class LineData(NamedTuple):
+    direction: str
+    stops: List[str]
+
+
 class Departures(object):
 
     def __init__(self, days: str, hours: List[List[str]], minutes_and_info: List[List[str]]):
