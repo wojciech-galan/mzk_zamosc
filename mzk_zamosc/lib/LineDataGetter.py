@@ -84,14 +84,23 @@ def get_line_data(lines, tds, line_number, repeats: int = 3) -> Tuple[List]:
     return line_direction_stops_departures + line_direction_stops_departures_incomplete, missing_line_data
 
 
+def get_possible_line_numbers(page_address: str = 'http://www.mzk.zamosc.pl/page/4.html', fake_user_agent={
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36'}) -> List[str]:
+    req = requests.get(page_address, headers=fake_user_agent)
+    soup = BeautifulSoup(req.content, 'html.parser')
+    body = soup.body
+    article = body.find('article')
+    return [a.text for a in article.div.section.find_all('a', recursive=True)]
+
 if __name__ == '__main__':
     with open(os.path.join(PROJECT_DIR, 'notebooks', 'lines.pickle'), 'rb') as f:
         lines = dict(pickle.load(f))
 
     line_datas = []
     missing_line_datas = []
-    for line_num in (0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 14, 15, 17, 21, 31, 33, 35, 40, 42, 44, 47, 49, 54, 55, 56):
-        page = f'http://www.mzk.zamosc.pl/pliki/rozklad/00{line_num:02}/w.htm'
+    for line_num in get_possible_line_numbers():
+        print(line_num)
+        page = f'http://www.mzk.zamosc.pl/pliki/rozklad/00{line_num.rjust(2, "0")}/w.htm'
         req = requests.get(page)
         soup = BeautifulSoup(req.content, 'html.parser')
         tds = soup.body.table.find_all('tr', recursive=False)[1].find_all('td', recursive=False)
