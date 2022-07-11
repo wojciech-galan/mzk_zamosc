@@ -3,7 +3,6 @@ import sys
 import bs4
 import requests
 from typing import List
-from typing import Dict
 from bs4 import BeautifulSoup
 
 PROJECT_DIR = os.path.abspath(__file__).rsplit(os.path.sep, 3)[0]
