@@ -6,6 +6,7 @@ import requests
 from functools import partial
 from lxml import etree
 from bs4 import BeautifulSoup
+from typing import Dict
 from typing import List
 
 PROJECT_DIR = os.path.abspath(__file__).rsplit(os.path.sep, 3)[0]
@@ -26,19 +27,19 @@ def get_lines_from_given_stop(line_url: str, url_root: str = 'http://www.mzk.zam
     return [A(f'{url_root}{x["href"].lstrip(".")}', x.text.strip()) for x in hrefs[:-1]]
 
 
-def parse_stop_page(stop_url: str):
+def parse_stop_page(stop_url: str) -> Dict[str, Departures]:
     req = requests.get(stop_url)
     soup = BeautifulSoup(req.content, 'html.parser')
     tr: bs4.element.Tag = soup.body.table.tr
     found: bs4.element.ResultSet[bs4.element.Tag] = tr.findAll(tag_has_bgcolor)
     assert len(found) == 1
     timetable = found[0]
-    departures = []
+    departures: Dict[str, Departures] = {}
     for tr in timetable.findAll(align=is_center_aligned):
         if has_one_td_with_class(tr):
             departure = td_has_class_is_followed_by_td_without_class(tr)
             if departure:
-                departures.append(departure)
+                departures[departure.days] = departure
     return departures
 
 
@@ -60,7 +61,8 @@ def parse_departure_hours(element: lxml.etree._Element, found: List[str] = None)
     if found is None:
         found = []
     text = element.text.strip() if element.text else None
-    if text: found.append([text])
+    if text:
+        found.append([text])
     if element.tag == 'br':
         br_text = element.tail.strip()
         if br_text:
